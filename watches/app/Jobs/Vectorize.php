@@ -35,7 +35,7 @@ class Vectorize implements ShouldQueue
 
         $client = OpenAI::client(config('services.openai.key'));
 
-        $file = storage_path("seeds/watches-full.csv");
+        $file = base_path("seeds/watches-full.csv");
         $csv = array_map("str_getcsv", file($file));
         $header = array_shift($csv);
 
