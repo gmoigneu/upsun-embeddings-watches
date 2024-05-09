@@ -8,7 +8,7 @@ export DB_SCHEME="postgresql"
 export DATABASE_URL="${DB_SCHEME}://${DB_USERNAME}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_PATH}"
 
 # Set Laravel-specific environment variables
-export DB_CONNECTION="$DB_SCHEME"
+export DB_CONNECTION="pgsql"
 export DB_DATABASE="$DB_PATH"
 
 # Set Cache environment variables
