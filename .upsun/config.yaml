@@ -89,8 +89,8 @@ applications:
         mkdir -p storage/framework/sessions
         mkdir -p storage/framework/cache
         mkdir -p storage/framework/views
-        php artisan optimize:clear
         php artisan migrate --force
+        php artisan optimize:clear
       post_deploy: |
         set -eux
         php artisan app:vectorize
