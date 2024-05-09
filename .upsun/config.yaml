@@ -46,6 +46,7 @@ applications:
     runtime:
       extensions:
         - apcu
+        - redis
         - blackfire
         - ctype
         - iconv
