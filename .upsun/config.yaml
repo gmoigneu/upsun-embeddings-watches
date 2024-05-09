@@ -75,7 +75,7 @@ applications:
         source: "storage"
         source_path: "cache"
         
-      "storage":
+      "storage/app/public":
         source: "storage"
         source_path: "storage/app/public"
     relationships:
