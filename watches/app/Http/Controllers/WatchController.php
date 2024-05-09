@@ -5,23 +5,25 @@ namespace App\Http\Controllers;
 use App\Helpers\MarkdownHelper;
 use App\Http\Requests\SearchWatchRequest;
 use App\Models\Watch;
-use Illuminate\Http\Request;
 use OpenAI;
 use Pgvector\Laravel\Distance;
 use Pgvector\Laravel\Vector;
-use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class WatchController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function search(Request $request)
+    public function search(SearchWatchRequest $request)
     {
-        $client = OpenAI::client(config('services.openai.key'));
+        $embeddingClient = OpenAI::client(config('services.openai.key'));
+        $chatClient = OpenAI::factory()
+            ->withApiKey(config('services.groq.key'))
+            ->withBaseUri('api.groq.com/openai/v1') // default: api.openai.com/v1
+            ->make();
 
         // Create the embedding of the query
-        $response = $client->embeddings()->create([
+        $response = $embeddingClient->embeddings()->create([
             'model' => 'text-embedding-3-small',
             'input' => $request->input('query')
         ]);
@@ -32,12 +34,12 @@ class WatchController extends Controller
         $neighbor = Watch::query()->nearestNeighbors('embedding', $embedding, Distance::L2)->first();
 
         // Ask OpenAI for the closest watches
-        $stream = $client->chat()->createStreamed([
-            'model' => 'gpt-4',
+        $stream = $chatClient->chat()->createStreamed([
+            'model' => 'llama3-8b-8192',
             'messages' => [
                 [
                     'role' => 'system',
-                    'content' => "You are an helpful AI that will recommend watches to the user. The watch selected is below with its attributes as markdown. Send the user a markdown formatted view of each watch and for each attribute, tell then why they are a good match to their request."
+                    'content' => "You are an helpful AI that will recommend watches to the user. The watch selected is below with its attributes as a list. Your response is a markdown document.First, output the brand and model of the watch as a title.  Second, send the user a bullet list view of the watch attributes without doing any modification. Then, add a paragrah of why this watch matches their request using the watch attributes."
                 ],
                 [
                     'role' => 'user',
