@@ -75,9 +75,9 @@ applications:
         source: "storage"
         source_path: "cache"
         
-      "storage/app/public":
+      "storage":
         source: "storage"
-        source_path: "storage/app/public"
+        source_path: "storage"
     relationships:
       database: "database:postgresql"
       redis: "redis:redis"
