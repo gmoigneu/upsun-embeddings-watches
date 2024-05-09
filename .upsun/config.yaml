@@ -55,9 +55,6 @@ applications:
         - pdo_pgsql
         - sodium
         - xsl
-    variables:
-        php:
-            opcache.preload: config/preload.php
     build:
       flavor: none
     web:
