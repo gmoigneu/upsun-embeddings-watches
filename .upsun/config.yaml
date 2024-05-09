@@ -22,7 +22,7 @@ applications:
     web:
       locations:
         "/":
-          root: "build"
+          root: "dist"
           expires: 1h
           passthru: "/index.html"
       commands:
