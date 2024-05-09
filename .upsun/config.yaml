@@ -1,0 +1,96 @@
+routes:
+  "https://frontend.{all}/": { type: upstream, upstream: "frontend:http" }
+  "https://api.{all}/": { type: upstream, upstream: "app:http" }
+  "http://{all}/": { type: redirect, to: "https://frontend.{all}/" }
+
+services: 
+  database:
+    type: postgresql:15
+    configuration:
+      extensions:
+        - vector
+  redis:
+    type: redis:7.0 # All available versions are: 7.0, 6.2
+ 
+applications:
+  frontend:
+    source:
+      root: "frontend"
+    type: nodejs:20
+    build:
+      flavor: none
+    web:
+      locations:
+        "/":
+          root: "build"
+          expires: 1h
+          passthru: "/index.html"
+      commands:
+        start: sleep infinity
+
+    hooks:
+      build: |
+        set -x -e
+        npm install
+        npm run build
+    app:
+      source:
+        root: "watches"
+
+      type: php:8.3
+
+      dependencies:
+        php:
+          composer/composer: "^2"
+
+      runtime:
+        extensions:
+          - apcu
+          - blackfire
+          - ctype
+          - iconv
+          - mbstring
+          - pdo_pgsql
+          - pdo_pgsql
+          - sodium
+          - xsl
+      variables:
+          php:
+              opcache.preload: config/preload.php
+      build:
+        flavor: none
+      web:
+        locations:
+          "/":
+            root: "public"
+            expires: 1h
+            passthru: "/index.php"
+      mounts:
+        "/.config":
+          source: "storage"
+          source_path: "config"
+          
+        "bootstrap/cache":
+          source: "storage"
+          source_path: "cache"
+          
+        "storage":
+          source: "storage/app/public"
+          source_path: "storage"
+      relationships:
+        database: "database:postgresql"
+        redis: "redis:redis"
+      hooks:
+        build: |
+          set -eux
+          composer --no-ansi --no-interaction install --no-progress --prefer-dist --optimize-autoloader --no-dev
+        deploy: |
+          set -eux
+          mkdir -p storage/framework/sessions
+          mkdir -p storage/framework/cache
+          mkdir -p storage/framework/views
+          php artisan optimize:clear
+          php artisan migrate --force
+        post_deploy: |
+          set -eux
+          php artisan app:vectorize
