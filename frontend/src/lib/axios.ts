@@ -9,10 +9,7 @@ export const getApiURL = () => {
 }
 
 
-let entrypoint = getApiURL()
-if(!entrypoint) {
-    entrypoint = 'localhost'
-}
+const entrypoint = getApiURL()
 
 const axios = Axios.create({
     baseURL: entrypoint,
